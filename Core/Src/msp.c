@@ -1,4 +1,4 @@
-#include "stm32l4xx_hal.h"
+#include "main.h"
 
 void HAL_MspInit(void)
 {
