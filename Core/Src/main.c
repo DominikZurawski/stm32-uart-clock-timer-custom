@@ -21,17 +21,9 @@ int main(void)
     HAL_PWR_EnableBkUpAccess();
 
     //Start timer
-    HAL_TIM_Base_Start(&htimer6);
+    HAL_TIM_Base_Start_IT(&htimer6);
 
-    while(1)
-    {
-        /* Loop until the update event flag is set */
-        while( ! (TIM6->SR & TIM_SR_UIF) );
-        /* The required time delay has been elapsed */
-        /* User code can be executed */
-        TIM6->SR = 0;
-        HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
-    }
+    while(1);
     return 0;
 }
 
@@ -61,6 +53,12 @@ void TIMER6_Init(void)
         Error_handler();
     }
 }
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
+}
+
 
 void Error_handler(void)
 {
