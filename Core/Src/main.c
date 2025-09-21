@@ -8,71 +8,108 @@
 
 void UART2_Init(void);
 void Error_handler(void);
+void SystemClock_Config(uint8_t);
 
 UART_HandleTypeDef huart2;
 
 int main(void)
 {
-	RCC_OscInitTypeDef osc_init;
-	RCC_ClkInitTypeDef clk_init;
 	char msg[100];
-	HAL_Init();
-
-	memset(&osc_init,0,sizeof(osc_init));
-	osc_init.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-    osc_init.MSIState = RCC_MSI_ON;
-    osc_init.MSIClockRange = RCC_MSIRANGE_6; // 4 MHz
-    osc_init.MSICalibrationValue = 0;
-    osc_init.PLL.PLLState   = RCC_PLL_NONE;
-
-    if ( HAL_RCC_OscConfig(&osc_init) != HAL_OK)
-    {
-        Error_handler();
-    }
-
-
-    clk_init.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK  | \
-                        RCC_CLOCKTYPE_PCLK1  | RCC_CLOCKTYPE_PCLK2;
-    clk_init.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
-    clk_init.AHBCLKDivider = RCC_SYSCLK_DIV2;
-    clk_init.APB1CLKDivider = RCC_HCLK_DIV1;
-    clk_init.APB2CLKDivider = RCC_HCLK_DIV1;
-
-    if( HAL_RCC_ClockConfig(&clk_init, FLASH_ACR_LATENCY_0WS) != HAL_OK)
-    {
-        Error_handler();
-    }
-
-    /*---------------------------- AFTER THIS LINE SYSCLK is SOURCED BY HSE------------------*/
-
-    __HAL_RCC_HSI_DISABLE(); //Saves some current
-
-    /* LETS REDO THE SYSTICK CONFIGURATION */
-
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-
+    HAL_Init();
+    SystemClock_Config(SYS_CLOCK_FREQ_80_MHZ);
     UART2_Init();
 
-	memset(msg,0,sizeof(msg));
-	sprintf(msg,"SYSCLK : %ldHz\r\n",HAL_RCC_GetSysClockFreq());
-	HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
+    memset(msg,0,sizeof(msg));
+    sprintf(msg,"SYSCLK : %ldHz\r\n",HAL_RCC_GetSysClockFreq());
+    HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
 
-	memset(msg,0,sizeof(msg));
-	sprintf(msg,"HCLK   : %ldHz\r\n",HAL_RCC_GetHCLKFreq());
-	HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
+    memset(msg,0,sizeof(msg));
+    sprintf(msg,"HCLK   : %ldHz\r\n",HAL_RCC_GetHCLKFreq());
+    HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
 
-	memset(msg,0,sizeof(msg));
-	sprintf(msg,"PCLK1  : %ldHz\r\n",HAL_RCC_GetPCLK1Freq());
-	HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
+    memset(msg,0,sizeof(msg));
+    sprintf(msg,"PCLK1  : %ldHz\r\n",HAL_RCC_GetPCLK1Freq());
+    HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
 
-	memset(msg,0,sizeof(msg));
-	sprintf(msg,"PCLK2  : %ldHz\r\n",HAL_RCC_GetPCLK2Freq());
-	HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
+    memset(msg,0,sizeof(msg));
+    sprintf(msg,"PCLK2  : %ldHz\r\n",HAL_RCC_GetPCLK2Freq());
+    HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
 
 	while(1);
 
 	return 0;
+}
+
+void SystemClock_Config(uint8_t clock_freq )
+{
+	RCC_OscInitTypeDef osc_init;
+	RCC_ClkInitTypeDef clk_init;
+
+	uint32_t FLatency =0;
+
+	osc_init.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+	osc_init.HSIState = RCC_HSI_ON;
+	osc_init.HSICalibrationValue = 16;
+	osc_init.PLL.PLLState = RCC_PLL_ON;
+	osc_init.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+
+	switch(clock_freq) {
+        case SYS_CLOCK_FREQ_50_MHZ:{
+            osc_init.PLL.PLLM = 4;
+            osc_init.PLL.PLLN = 25;
+            osc_init.PLL.PLLR=2;
+            osc_init.PLL.PLLP = 2;
+            osc_init.PLL.PLLQ  = 2;
+
+            clk_init.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | \
+                                RCC_CLOCKTYPE_PCLK1  | RCC_CLOCKTYPE_PCLK2;
+            clk_init.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+            clk_init.AHBCLKDivider = RCC_SYSCLK_DIV1;
+            clk_init.APB1CLKDivider = RCC_HCLK_DIV2;
+            clk_init.APB2CLKDivider = RCC_HCLK_DIV2;
+
+            FLatency = FLASH_ACR_LATENCY_1WS;
+            break;
+    }
+    case SYS_CLOCK_FREQ_80_MHZ: {
+        osc_init.PLL.PLLM = 2;
+        osc_init.PLL.PLLN = 20;
+        osc_init.PLL.PLLR=2;
+        osc_init.PLL.PLLP = 2;
+        osc_init.PLL.PLLQ  = 2;
+
+        clk_init.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | \
+                            RCC_CLOCKTYPE_PCLK1  | RCC_CLOCKTYPE_PCLK2;
+        clk_init.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+        clk_init.AHBCLKDivider = RCC_SYSCLK_DIV1;
+        clk_init.APB1CLKDivider = RCC_HCLK_DIV2;
+        clk_init.APB2CLKDivider = RCC_HCLK_DIV2;
+
+        FLatency = FLASH_ACR_LATENCY_2WS;
+
+        break;
+    }
+
+	default:
+	  return;
+	}
+
+	if(HAL_RCC_OscConfig(&osc_init) != HAL_OK)
+	{
+		Error_handler();
+	}
+
+
+	if(HAL_RCC_ClockConfig(&clk_init,FLatency) != HAL_OK)
+	{
+		Error_handler();
+	}
+
+	//Systick configuration
+
+	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 }
 
 void UART2_Init(void)
