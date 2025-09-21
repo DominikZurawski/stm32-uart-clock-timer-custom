@@ -1,146 +1,69 @@
 #include "stm32l4xx_hal.h"
 #include "main.h"
 #include <string.h>
-#include <stdio.h>
 
-#define TRUE 1
-#define FALSE 0
-
-void UART2_Init(void);
+void SystemClockConfig(void);
+void TIMER6_Init(void);
+void GPIO_Init(void);
 void Error_handler(void);
-void SystemClock_Config(uint8_t);
 
-UART_HandleTypeDef huart2;
+TIM_HandleTypeDef htimer6;
 
 int main(void)
 {
-	char msg[100];
     HAL_Init();
-    SystemClock_Config(SYS_CLOCK_FREQ_80_MHZ);
-    UART2_Init();
+    SystemClockConfig();
+    GPIO_Init();
+    TIMER6_Init();
 
-    memset(msg,0,sizeof(msg));
-    sprintf(msg,"SYSCLK : %ldHz\r\n",HAL_RCC_GetSysClockFreq());
-    HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_RCC_PWR_CLK_ENABLE();
+    HAL_PWR_EnableBkUpAccess();
 
-    memset(msg,0,sizeof(msg));
-    sprintf(msg,"HCLK   : %ldHz\r\n",HAL_RCC_GetHCLKFreq());
-    HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
+    //Start timer
+    HAL_TIM_Base_Start(&htimer6);
 
-    memset(msg,0,sizeof(msg));
-    sprintf(msg,"PCLK1  : %ldHz\r\n",HAL_RCC_GetPCLK1Freq());
-    HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
-
-    memset(msg,0,sizeof(msg));
-    sprintf(msg,"PCLK2  : %ldHz\r\n",HAL_RCC_GetPCLK2Freq());
-    HAL_UART_Transmit(&huart2,(uint8_t*)msg,strlen(msg),HAL_MAX_DELAY);
-
-	while(1);
-
-	return 0;
+    while(1)
+    {
+        /* Loop until the update event flag is set */
+        while( ! (TIM6->SR & TIM_SR_UIF) );
+        /* The required time delay has been elapsed */
+        /* User code can be executed */
+        TIM6->SR = 0;
+        HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
+    }
+    return 0;
 }
 
-void SystemClock_Config(uint8_t clock_freq )
+void SystemClockConfig(void)
 {
-	RCC_OscInitTypeDef osc_init;
-	RCC_ClkInitTypeDef clk_init;
 
-	uint32_t FLatency =0;
-
-	osc_init.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-	osc_init.HSIState = RCC_HSI_ON;
-	osc_init.HSICalibrationValue = 16;
-	osc_init.PLL.PLLState = RCC_PLL_ON;
-	osc_init.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-
-	switch(clock_freq) {
-        case SYS_CLOCK_FREQ_50_MHZ:{
-            osc_init.PLL.PLLM = 4;
-            osc_init.PLL.PLLN = 25;
-            osc_init.PLL.PLLR=2;
-            osc_init.PLL.PLLP = 2;
-            osc_init.PLL.PLLQ  = 2;
-
-            clk_init.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | \
-                                RCC_CLOCKTYPE_PCLK1  | RCC_CLOCKTYPE_PCLK2;
-            clk_init.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-            clk_init.AHBCLKDivider = RCC_SYSCLK_DIV1;
-            clk_init.APB1CLKDivider = RCC_HCLK_DIV2;
-            clk_init.APB2CLKDivider = RCC_HCLK_DIV2;
-
-            FLatency = FLASH_ACR_LATENCY_1WS;
-            break;
-    }
-    case SYS_CLOCK_FREQ_80_MHZ: {
-        osc_init.PLL.PLLM = 2;
-        osc_init.PLL.PLLN = 20;
-        osc_init.PLL.PLLR=2;
-        osc_init.PLL.PLLP = 2;
-        osc_init.PLL.PLLQ  = 2;
-
-        clk_init.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | \
-                            RCC_CLOCKTYPE_PCLK1  | RCC_CLOCKTYPE_PCLK2;
-        clk_init.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-        clk_init.AHBCLKDivider = RCC_SYSCLK_DIV1;
-        clk_init.APB1CLKDivider = RCC_HCLK_DIV2;
-        clk_init.APB2CLKDivider = RCC_HCLK_DIV2;
-
-        FLatency = FLASH_ACR_LATENCY_2WS;
-
-        break;
-    }
-
-	default:
-	  return;
-	}
-
-	if(HAL_RCC_OscConfig(&osc_init) != HAL_OK)
-	{
-		Error_handler();
-	}
-
-
-	if(HAL_RCC_ClockConfig(&clk_init,FLatency) != HAL_OK)
-	{
-		Error_handler();
-	}
-
-	//Systick configuration
-
-	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-
-	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 }
 
-void UART2_Init(void)
+void GPIO_Init(void)
 {
-	huart2.Instance = USART2;
-	huart2.Init.BaudRate = 115200;
-	huart2.Init.WordLength = UART_WORDLENGTH_8B;
-	huart2.Init.StopBits = UART_STOPBITS_1;
-	huart2.Init.Parity = UART_PARITY_NONE;
-	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart2.Init.Mode = UART_MODE_TX_RX;
-	if ( HAL_UART_Init(&huart2) != HAL_OK )
-	{
-		//There is a problem
-		Error_handler();
-	}
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIO_InitTypeDef ledgpio;
+    ledgpio.Pin = GPIO_PIN_5;
+    ledgpio.Mode = GPIO_MODE_OUTPUT_PP;
+    ledgpio.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA,&ledgpio);
+}
+
+void TIMER6_Init(void)
+{
+    htimer6.Instance = TIM6;
+    htimer6.Init.Prescaler = 24;
+    htimer6.Init.Period = 64000-1;
+
+    if( HAL_TIM_Base_Init(&htimer6) != HAL_OK )
+    {
+        Error_handler();
+    }
 }
 
 void Error_handler(void)
 {
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    GPIO_InitTypeDef gpio_led;
-    gpio_led.Pin = GPIO_PIN_5;
-    gpio_led.Mode = GPIO_MODE_OUTPUT_PP;
-    gpio_led.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOA, &gpio_led);
-
-    while(1)
-    {
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-        HAL_Delay(200);
-    }
+    while(1);
 }
 
