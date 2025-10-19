@@ -12,6 +12,7 @@
 		[
 			"add_executable",
 			"target_link_libraries",
+			"target_compile_options",
 			"target_sources"
 		],
 		"files" : 
@@ -42,6 +43,12 @@
 			{
 				"command" : 2,
 				"file" : 1,
+				"line" : 87,
+				"parent" : 2
+			},
+			{
+				"command" : 3,
+				"file" : 1,
 				"line" : 80,
 				"parent" : 2
 			}
@@ -54,6 +61,14 @@
 			[
 				{
 					"fragment" : " -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -Wall -fdata-sections -ffunction-sections -Os -g0 -std=gnu11"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-mfloat-abi=hard"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-mfpu=fpv4-sp-d16"
 				}
 			],
 			"defines" : 
@@ -113,6 +128,14 @@
 			[
 				{
 					"fragment" : " -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -x assembler-with-cpp -MMD -MP -O3 -DNDEBUG"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-mfloat-abi=hard"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-mfpu=fpv4-sp-d16"
 				}
 			],
 			"defines" : 
@@ -174,6 +197,10 @@
 			},
 			{
 				"fragment" : "-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard  -T \"C:/Users/Dominik/Documents/Domin/Programowanie/Projekty STM32/MCU2/My_Workspace/UART_Example/STM32L476XX_FLASH.ld\" --specs=nano.specs -Wl,-Map=UART_Example.map -Wl,--gc-sections -Wl,--print-memory-usage",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-u _printf_float",
 				"role" : "flags"
 			},
 			{
@@ -241,37 +268,37 @@
 	"sources" : 
 	[
 		{
-			"backtrace" : 4,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Core/Src/main.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 4,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Core/Src/it.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 4,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Core/Src/msp.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 4,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Core/Src/sysmem.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 4,
+			"backtrace" : 5,
 			"compileGroupIndex" : 0,
 			"path" : "Core/Src/syscalls.c",
 			"sourceGroupIndex" : 0
 		},
 		{
-			"backtrace" : 4,
+			"backtrace" : 5,
 			"compileGroupIndex" : 1,
 			"path" : "startup_stm32l476xx.s",
 			"sourceGroupIndex" : 1

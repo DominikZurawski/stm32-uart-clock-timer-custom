@@ -67,7 +67,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "UART_Example::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-UART_Example-Release-0a47269515e496270f3e.json",
+					"jsonFile" : "target-UART_Example-Release-9a15292e0d5c19daf0f3.json",
 					"name" : "UART_Example",
 					"projectIndex" : 0
 				}
@@ -83,6 +83,6 @@
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 6
+		"minor" : 8
 	}
 }
