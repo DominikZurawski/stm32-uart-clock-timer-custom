@@ -134,10 +134,7 @@ void SystemClock_Config(uint8_t clock_freq )
 		Error_handler();
 	}
 
-	//Systick configuration
-
 	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-
 	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 }
 
