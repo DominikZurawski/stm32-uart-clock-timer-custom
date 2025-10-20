@@ -18,35 +18,37 @@ void HAL_MspInit(void)
     HAL_NVIC_SetPriority(UsageFault_IRQn,0,0);
 }
 
-void HAL_TIM_IC_MspInit(TIM_HandleTypeDef *htim)
+void HAL_TIM_OC_MspInit(TIM_HandleTypeDef *htim)
 {
-	GPIO_InitTypeDef tim2ch1_gpio;
-	//1. enable the peripheral clock for the timer2 peripheral
-	__HAL_RCC_TIM2_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
+  GPIO_InitTypeDef tim2OC_ch_gpios;
+  //1. enable the peripheral clock for the timer2 peripheral
+  __HAL_RCC_TIM2_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
-	//2. Configure a gpio to behave as timer2 channel 1
-	tim2ch1_gpio.Pin = GPIO_PIN_0;
-	tim2ch1_gpio.Mode = GPIO_MODE_AF_PP;
-	tim2ch1_gpio.Alternate = GPIO_AF1_TIM2;
-	HAL_GPIO_Init(GPIOA,&tim2ch1_gpio);
+  //2. Configure gpios to behave as timer2 channel 1,2,3 and 4
+  /* PA0  --> TIM2_CH1
+     PA1  --> TIM2_CH2
+     PB10 --> TIM2_CH3
+     PB2  --> TIM2_CH4 */
 
-	//3. nvic settings
-	HAL_NVIC_SetPriority(TIM2_IRQn,15,0);
-	HAL_NVIC_EnableIRQ(TIM2_IRQn);
-}
+  tim2OC_ch_gpios.Pin = GPIO_PIN_0|GPIO_PIN_1;
+  tim2OC_ch_gpios.Mode = GPIO_MODE_AF_PP;
+  tim2OC_ch_gpios.Pull = GPIO_NOPULL;
+  tim2OC_ch_gpios.Speed = GPIO_SPEED_FREQ_LOW;
+  tim2OC_ch_gpios.Alternate = GPIO_AF1_TIM2;
+  HAL_GPIO_Init(GPIOA, &tim2OC_ch_gpios);
 
+  tim2OC_ch_gpios.Pin = GPIO_PIN_2|GPIO_PIN_10;
+  tim2OC_ch_gpios.Mode = GPIO_MODE_AF_PP;
+  tim2OC_ch_gpios.Pull = GPIO_NOPULL;
+  tim2OC_ch_gpios.Speed = GPIO_SPEED_FREQ_LOW;
+  tim2OC_ch_gpios.Alternate = GPIO_AF1_TIM2;
+  HAL_GPIO_Init(GPIOB, &tim2OC_ch_gpios);
 
-void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htimer)
-{
-  //1. enable the clock for the TIM6 peripheral
-  __HAL_RCC_TIM6_CLK_ENABLE();
-
-  //2. Enable the IRQ of TIM6
-  HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
-
-  //3. setup the priority for TIM6_DAC_IRQn
-  HAL_NVIC_SetPriority(TIM6_DAC_IRQn,15,0);
+  //3. nvic settings
+  HAL_NVIC_SetPriority(TIM2_IRQn,15,0);
+  HAL_NVIC_EnableIRQ(TIM2_IRQn);
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef *huart)
